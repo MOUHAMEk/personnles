@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gestion des Personnels et Salaires</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f7f8fa;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(to right, #2c3e50, #34495e);
+        color: #ecf0f1;
+        padding: 15px 20px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 1.6em;
+        font-weight: 500;
+    }
+
+    .nav-buttons {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .nav-buttons button {
+        background: #2980b9;
+        border: none;
+        padding: 12px 20px;
+        color: #fff;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+    .nav-buttons button:hover {
+        background: #3498db;
+        transform: scale(1.02);
+    }
+
+    .container {
+        max-width: 95%;
+        margin: 20px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        display: none; /* caché par défaut */
+        overflow-x: auto;
+    }
+
+    .container.active {
+        display: block;
+    }
+
+    h2 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 30px;
+        font-weight: 500;
+        color: #34495e;
+        font-size: 1.4em;
+    }
+
+    form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+        align-items: flex-end;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #2c3e50;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 0.95em;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus {
+        border-color: #2980b9;
+    }
+
+    button.submit-btn {
+        background: #2980b9;
+        border: none;
+        padding: 10px 20px;
+        color: #fff;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+    button.submit-btn:hover {
+        background: #3498db;
+        transform: scale(1.02);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        border-radius: 10px;
+        overflow: hidden;
+        font-size: 0.95em;
+        background: #ffffff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        table-layout: auto;
+        word-wrap: break-word;
+    }
+
+    table thead {
+        background: linear-gradient(to right, #2c3e50, #34495e);
+        color: #ecf0f1;
+    }
+
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9em;
+        max-width: 120px;
+    }
+
+    th {
+        text-align: left;
+        font-weight: normal;
+    }
+
+    tbody tr:hover {
+        background: #ecf0f1;
+    }
+
+    .delete-btn {
+        background: #c0392b;
+        border: none;
+        padding: 5px 10px;
+        color: #fff;
+        font-size: 0.8em;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-left: 10px;
+        transition: background 0.3s ease;
+    }
+
+    .delete-btn:hover {
+        background: #e74c3c;
+    }
+
+    .edit-btn {
+        background: #27ae60;
+        border: none;
+        padding: 5px 10px;
+        color: #fff;
+        font-size: 0.8em;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-right: 10px;
+        transition: background 0.3s ease;
+    }
+
+    .edit-btn:hover {
+        background: #2ecc71;
+    }
+
+    .actions {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    #save-btn {
+        background: #8e44ad;
+        border: none;
+        padding: 12px 20px;
+        color: #fff;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+    #save-btn:hover {
+        background: #9b59b6;
+        transform: scale(1.02);
+    }
+
+    tfoot {
+        background: #f0f2f5;
+        font-weight: bold;
+    }
+
+    tfoot td#weekly-total {
+        color: red;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .modal-overlay, #modal-overlay-weekly {
+        position: fixed;
+        top: 0; 
+        left: 0;
+        right: 0; 
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center; 
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 300px;
+        width: 90%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .modal h3 {
+        margin-top: 0;
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .modal .form-group {
+        margin-bottom: 15px;
+    }
+
+    .modal label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .modal input[type="datetime-local"],
+    .modal input[type="date"] {
+        width: 100%;
+        padding: 8px;
+        font-size: 0.95em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .modal-actions {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .modal-actions button {
+        background: #2980b9;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+        font-size: 0.9em;
+    }
+
+    .modal-actions button:hover {
+        background: #3498db;
+    }
+
+    #download-pdf-btn {
+        background: #d35400;
+        border: none;
+        padding: 10px 20px;
+        color: #fff;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 500;
+        margin-top: 20px;
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+    #download-pdf-btn:hover {
+        background: #e67e22;
+        transform: scale(1.02);
+    }
+
+    .week-days {
+        display: flex;
+        flex-direction: column;
+        gap:5px;
+    }
+
+    .week-days label {
+        font-weight:normal;
+        display:flex;
+        align-items:center;
+        gap:5px;
+    }
+
+    @media(max-width: 600px) {
+        .form-group {
+            min-width: 100%;
+        }
+        form {
+            flex-direction: column;
+        }
+        th, td {
+            padding: 8px;
+            font-size: 0.85em;
+        }
+        table {
+            font-size: 0.85em;
+        }
+        .nav-buttons button {
+            padding: 10px;
+            font-size: 0.9em;
+        }
+        header h1 {
+            font-size: 1.2em;
+        }
+        h2 {
+            font-size: 1.2em;
+        }
+        button.submit-btn, #save-btn {
+            font-size: 0.9em;
+            padding: 8px 15px;
+        }
+        .edit-btn, .delete-btn {
+            font-size: 0.7em;
+            padding: 4px 6px;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<body>
+<header>
+    <h1>Gestion des Personnels et Salaires</h1>
+</header>
+
+<div class="nav-buttons">
+    <button id="weekly-btn">Ouvriers payés par semaine</button>
+    <button id="daily-btn">Ouvriers journaliers</button>
+    <button id="task-btn">Ouvriers par tâche</button>
+</div>
+
+<!-- Section ouvriers payés par semaine -->
+<div class="container" id="weekly-container">
+    <h2>Ajouter un Ouvrier (Payé par semaine)</h2>
+    <form id="add-weekly-worker-form">
+        <div class="form-group">
+            <label for="weeklyName">Nom de l'ouvrier :</label>
+            <input type="text" id="weeklyName" required placeholder="Ex: Mohamed"/>
+        </div>
+        <div class="form-group">
+            <label for="weeklyRole">Rôle :</label>
+            <input type="text" id="weeklyRole" required placeholder="Ex: Maçon"/>
+        </div>
+        <div class="form-group">
+            <label for="weeklyDailySalary">Salaire Journalier (UM) :</label>
+            <input type="number" id="weeklyDailySalary" required min="0" step="0.01" placeholder="Ex: 1000"/>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="submit-btn">Ajouter</button>
+        </div>
+    </form>
+
+    <h2>Liste des Ouvriers (Hebdomadaire)</h2>
+    <table id="weekly-table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Rôle</th>
+                <th>Salaire Jour (UM)</th>
+                <th>Date de début</th>
+                <th>Jours travaillés</th>
+                <th>Salaire total (UM)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamique -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align:right;">Total:</td>
+                <td id="weekly-total"></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div style="text-align:center;">
+        <button id="download-pdf-btn">Télécharger le PDF</button>
+    </div>
+</div>
+
+<!-- Section journaliers -->
+<div class="container" id="daily-container">
+    <h2>Ajouter un Ouvrier (Journalier)</h2>
+    <form id="add-daily-worker-form">
+        <div class="form-group">
+            <label for="dailyName">Nom de l'ouvrier :</label>
+            <input type="text" id="dailyName" required placeholder="Ex: Ahmed"/>
+        </div>
+        <div class="form-group">
+            <label for="dailyRole">Rôle :</label>
+            <input type="text" id="dailyRole" required placeholder="Ex: Aide"/>
+        </div>
+        <div class="form-group">
+            <label for="dailyAmount">Montant à payer (UM) :</label>
+            <input type="number" id="dailyAmount" required min="0" step="0.01" placeholder="Ex: 500"/>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="submit-btn">Ajouter</button>
+        </div>
+    </form>
+
+    <h2>Liste des Ouvriers (Journalier)</h2>
+    <table id="daily-table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Rôle</th>
+                <th>Montant (UM)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamique -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Section par tâche -->
+<div class="container" id="task-container">
+    <h2>Ajouter un Ouvrier (Par Tâche)</h2>
+    <form id="add-task-worker-form">
+        <div class="form-group">
+            <label for="taskName">Nom de l'ouvrier :</label>
+            <input type="text" id="taskName" required placeholder="Ex: Ali"/>
+        </div>
+        <div class="form-group">
+            <label for="taskRole">Rôle :</label>
+            <input type="text" id="taskRole" required placeholder="Ex: Plombier"/>
+        </div>
+        <div class="form-group">
+            <label for="taskAmount">Montant pour la tâche (UM) :</label>
+            <input type="number" id="taskAmount" required min="0" step="0.01" placeholder="Ex: 2000"/>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="submit-btn">Ajouter</button>
+        </div>
+    </form>
+
+    <h2>Liste des Ouvriers (Par Tâche)</h2>
+    <table id="task-table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Rôle</th>
+                <th>Montant (UM)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamique -->
+        </tbody>
+    </table>
+</div>
+
+<div class="actions">
+    <button id="save-btn">Enregistrer toutes les données</button>
+</div>
+
+<!-- Modal pour configurer jours travaillés de l'ouvrier hebdo -->
+<div class="modal-overlay" id="modal-overlay-weekly">
+    <div class="modal">
+        <h3>Définir les jours travaillés</h3>
+        <div class="form-group">
+            <label for="weekStartDate">Date de début:</label>
+            <input type="date" id="weekStartDate">
+        </div>
+        <div class="form-group">
+            <label>Jours travaillés:</label>
+            <div class="week-days">
+                <label><input type="checkbox" value="1"> Lundi</label>
+                <label><input type="checkbox" value="2"> Mardi</label>
+                <label><input type="checkbox" value="3"> Mercredi</label>
+                <label><input type="checkbox" value="4"> Jeudi</label>
+                <label><input type="checkbox" value="5"> Vendredi</label>
+                <label><input type="checkbox" value="6"> Samedi</label>
+                <label><input type="checkbox" value="7"> Dimanche</label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="cancelWeeklyModalBtn">Annuler</button>
+            <button id="confirmWeeklyModalBtn">Confirmer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let weeklyWorkers = [];
+    let dailyWorkers = [];
+    let taskWorkers = [];
+    let selectedWeeklyWorkerIndex = null;
+
+    const weeklyBtn = document.getElementById('weekly-btn');
+    const dailyBtn = document.getElementById('daily-btn');
+    const taskBtn = document.getElementById('task-btn');
+
+    const weeklyContainer = document.getElementById('weekly-container');
+    const dailyContainer = document.getElementById('daily-container');
+    const taskContainer = document.getElementById('task-container');
+
+    function showSection(section) {
+        weeklyContainer.classList.remove('active');
+        dailyContainer.classList.remove('active');
+        taskContainer.classList.remove('active');
+        if(section === 'weekly') weeklyContainer.classList.add('active');
+        else if(section === 'daily') dailyContainer.classList.add('active');
+        else if(section === 'task') taskContainer.classList.add('active');
+    }
+
+    weeklyBtn.addEventListener('click', () => showSection('weekly'));
+    dailyBtn.addEventListener('click', () => showSection('daily'));
+    taskBtn.addEventListener('click', () => showSection('task'));
+
+    showSection('weekly');
+
+    function loadFromLocalStorage() {
+        const wData = localStorage.getItem('weeklyWorkersData');
+        const dData = localStorage.getItem('dailyWorkersData');
+        const tData = localStorage.getItem('taskWorkersData');
+
+        if(wData) weeklyWorkers = JSON.parse(wData);
+        if(dData) dailyWorkers = JSON.parse(dData);
+        if(tData) taskWorkers = JSON.parse(tData);
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('weeklyWorkersData', JSON.stringify(weeklyWorkers));
+        localStorage.setItem('dailyWorkersData', JSON.stringify(dailyWorkers));
+        localStorage.setItem('taskWorkersData', JSON.stringify(taskWorkers));
+        alert("Données enregistrées avec succès !");
+    }
+
+    function formatDateDisplay(dateStr) {
+        if(!dateStr) return "";
+        const d = new Date(dateStr);
+        if(isNaN(d.getTime())) return "";
+        const day = String(d.getDate()).padStart(2,'0');
+        const month = String(d.getMonth()+1).padStart(2,'0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    function updateWeeklyTotal() {
+        let sum = 0;
+        weeklyWorkers.forEach((worker) => {
+            const workedDaysCount = worker.workedDays ? worker.workedDays.filter(d => d).length : 0;
+            const totalSalary = workedDaysCount * worker.dailySalary;
+            sum += totalSalary;
+        });
+        const totalCell = document.getElementById('weekly-total');
+        totalCell.textContent = sum.toFixed(2) + " UM";
+        return sum; // On retourne le total pour l'utiliser plus tard
+    }
+
+    function updateWeeklyTable() {
+        const tbody = document.querySelector('#weekly-table tbody');
+        tbody.innerHTML = '';
+
+        weeklyWorkers.forEach((worker, index) => {
+            const tr = document.createElement('tr');
+
+            const nameTd = document.createElement('td');
+            nameTd.textContent = worker.name;
+
+            const roleTd = document.createElement('td');
+            roleTd.textContent = worker.role;
+
+            const dailyTd = document.createElement('td');
+            dailyTd.textContent = worker.dailySalary.toFixed(2) + " UM";
+
+            const startDateTd = document.createElement('td');
+            startDateTd.textContent = worker.startWeekDate ? formatDateDisplay(worker.startWeekDate) : '';
+
+            const workedDaysCount = worker.workedDays ? worker.workedDays.filter(d => d).length : 0;
+            const daysWorkedTd = document.createElement('td');
+            daysWorkedTd.textContent = workedDaysCount;
+
+            const totalSalary = workedDaysCount * worker.dailySalary;
+            const totalTd = document.createElement('td');
+            totalTd.textContent = totalSalary.toFixed(2) + " UM";
+
+            const actionTd = document.createElement('td');
+            const editBtn = document.createElement('button');
+            editBtn.textContent = "⚙️";
+            editBtn.classList.add('edit-btn');
+            editBtn.addEventListener('click', () => {
+                selectedWeeklyWorkerIndex = index;
+                showWeeklyModal(worker);
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = "🗑️";
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                weeklyWorkers.splice(index, 1);
+                updateWeeklyTable();
+            });
+
+            actionTd.appendChild(editBtn);
+            actionTd.appendChild(deleteBtn);
+
+            tr.appendChild(nameTd);
+            tr.appendChild(roleTd);
+            tr.appendChild(dailyTd);
+            tr.appendChild(startDateTd);
+            tr.appendChild(daysWorkedTd);
+            tr.appendChild(totalTd);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
+        });
+
+        updateWeeklyTotal();
+    }
+
+    function updateDailyTable() {
+        const tbody = document.querySelector('#daily-table tbody');
+        tbody.innerHTML = '';
+
+        dailyWorkers.forEach((worker, index) => {
+            const tr = document.createElement('tr');
+
+            const nameTd = document.createElement('td');
+            nameTd.textContent = worker.name;
+
+            const roleTd = document.createElement('td');
+            roleTd.textContent = worker.role;
+
+            const amountTd = document.createElement('td');
+            amountTd.textContent = worker.amount.toFixed(2) + " UM";
+
+            const actionTd = document.createElement('td');
+
+            const payBtn = document.createElement('button');
+            payBtn.textContent = "💰";
+            payBtn.classList.add('edit-btn');
+            payBtn.addEventListener('click', () => {
+                dailyWorkers.splice(index, 1);
+                updateDailyTable();
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = "🗑️";
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                dailyWorkers.splice(index, 1);
+                updateDailyTable();
+            });
+
+            actionTd.appendChild(payBtn);
+            actionTd.appendChild(deleteBtn);
+
+            tr.appendChild(nameTd);
+            tr.appendChild(roleTd);
+            tr.appendChild(amountTd);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateTaskTable() {
+        const tbody = document.querySelector('#task-table tbody');
+        tbody.innerHTML = '';
+
+        taskWorkers.forEach((worker, index) => {
+            const tr = document.createElement('tr');
+
+            const nameTd = document.createElement('td');
+            nameTd.textContent = worker.name;
+
+            const roleTd = document.createElement('td');
+            roleTd.textContent = worker.role;
+
+            const amountTd = document.createElement('td');
+            amountTd.textContent = worker.amount.toFixed(2) + " UM";
+
+            const actionTd = document.createElement('td');
+
+            const payBtn = document.createElement('button');
+            payBtn.textContent = "💰";
+            payBtn.classList.add('edit-btn');
+            payBtn.addEventListener('click', () => {
+                taskWorkers.splice(index, 1);
+                updateTaskTable();
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = "🗑️";
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                taskWorkers.splice(index, 1);
+                updateTaskTable();
+            });
+
+            actionTd.appendChild(payBtn);
+            actionTd.appendChild(deleteBtn);
+
+            tr.appendChild(nameTd);
+            tr.appendChild(roleTd);
+            tr.appendChild(amountTd);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    const weeklyForm = document.getElementById('add-weekly-worker-form');
+    weeklyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('weeklyName').value.trim();
+        const role = document.getElementById('weeklyRole').value.trim();
+        const dailySalary = parseFloat(document.getElementById('weeklyDailySalary').value);
+
+        if(!name || !role || isNaN(dailySalary) || dailySalary < 0) {
+            alert("Veuillez renseigner correctement les informations.");
+            return;
+        }
+
+        const newWorker = {
+            name: name,
+            role: role,
+            dailySalary: dailySalary,
+            startWeekDate: null,
+            workedDays: [false,false,false,false,false,false,false] // Lundi->Dimanche
+        };
+
+        weeklyWorkers.push(newWorker);
+        updateWeeklyTable();
+        weeklyForm.reset();
+    });
+
+    const dailyForm = document.getElementById('add-daily-worker-form');
+    dailyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('dailyName').value.trim();
+        const role = document.getElementById('dailyRole').value.trim();
+        const amount = parseFloat(document.getElementById('dailyAmount').value);
+
+        if(!name || !role || isNaN(amount) || amount < 0) {
+            alert("Veuillez renseigner correctement les informations.");
+            return;
+        }
+
+        const newWorker = {
+            name: name,
+            role: role,
+            amount: amount
+        };
+
+        dailyWorkers.push(newWorker);
+        updateDailyTable();
+        dailyForm.reset();
+    });
+
+    const taskForm = document.getElementById('add-task-worker-form');
+    taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('taskName').value.trim();
+        const role = document.getElementById('taskRole').value.trim();
+        const amount = parseFloat(document.getElementById('taskAmount').value);
+
+        if(!name || !role || isNaN(amount) || amount < 0) {
+            alert("Veuillez renseigner correctement les informations.");
+            return;
+        }
+
+        const newWorker = {
+            name: name,
+            role: role,
+            amount: amount
+        };
+
+        taskWorkers.push(newWorker);
+        updateTaskTable();
+        taskForm.reset();
+    });
+
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.addEventListener('click', saveToLocalStorage);
+
+    // Modal pour Ouvriers Hebdo (edit jours)
+    const modalOverlayWeekly = document.getElementById('modal-overlay-weekly');
+    const weekStartDateInput = document.getElementById('weekStartDate');
+    const cancelWeeklyModalBtn = document.getElementById('cancelWeeklyModalBtn');
+    const confirmWeeklyModalBtn = document.getElementById('confirmWeeklyModalBtn');
+
+    const daysCheckboxes = document.querySelectorAll('.week-days input[type="checkbox"]');
+
+    function showWeeklyModal(worker) {
+        weekStartDateInput.value = worker.startWeekDate || '';
+        daysCheckboxes.forEach((cb, idx) => {
+            cb.checked = worker.workedDays && worker.workedDays[idx] ? true : false;
+        });
+        modalOverlayWeekly.style.display = 'flex';
+    }
+
+    function hideWeeklyModal() {
+        modalOverlayWeekly.style.display = 'none';
+        selectedWeeklyWorkerIndex = null;
+    }
+
+    cancelWeeklyModalBtn.addEventListener('click', hideWeeklyModal);
+    confirmWeeklyModalBtn.addEventListener('click', () => {
+        if(selectedWeeklyWorkerIndex === null) return;
+        const worker = weeklyWorkers[selectedWeeklyWorkerIndex];
+
+        const chosenDate = weekStartDateInput.value;
+        if(!chosenDate) {
+            alert("Veuillez sélectionner une date de début.");
+            return;
+        }
+
+        let newWorkedDays = [];
+        daysCheckboxes.forEach(cb => {
+            newWorkedDays.push(cb.checked);
+        });
+
+        worker.startWeekDate = chosenDate;
+        worker.workedDays = newWorkedDays;
+        updateWeeklyTable();
+        hideWeeklyModal();
+    });
+
+    // Fonction pour charger une image
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = (e) => reject(e);
+            img.src = url;
+        });
+    }
+
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    downloadPdfBtn.addEventListener('click', async () => {
+    // Recalcule le total pour l'afficher
+    let totalSum = 0;
+    weeklyWorkers.forEach((worker) => {
+        const workedDaysCount = worker.workedDays ? worker.workedDays.filter(d => d).length : 0;
+        const totalSalary = workedDaysCount * worker.dailySalary;
+        totalSum += totalSalary;
+    });
+
+    const weeklyTable = document.getElementById('weekly-table');
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imageUrl = "https://i.ibb.co/4JY3n4z/GSEG-ETP-pdf-1.jpg";
+    try {
+        const img = await loadImage(imageUrl);
+        pdf.addImage(img, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'MEDIUM');
+    } catch (error) {
+        console.error("Erreur lors du chargement de l'image :", error);
+        alert("Impossible de charger l'image pour le PDF.");
+        return;
+    }
+
+    pdf.setFontSize(20);
+pdf.setTextColor(0,0,0);
+pdf.text("Payement Personnels (Hebdo)", 60, 180);
+
+pdf.setTextColor(255,0,0);
+pdf.setFont(undefined, 'bold');
+pdf.setFontSize(16);
+pdf.text("Total: " + totalSum.toFixed(2) + " UM", 60, 210);
+
+    // On agrandit l'échelle pour une meilleure résolution
+    const canvas = await html2canvas(weeklyTable, { scale:3 });
+    const imgData = canvas.toDataURL('image/png');
+
+    pdf.setFontSize(12); 
+    pdf.setFont(undefined, 'normal'); 
+
+    // Décaler le tableau de +50 points (de 100 à 150)
+    const startY = 225; 
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pageWidth - 80; 
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 40, startY, pdfWidth, pdfHeight);
+
+    pdf.save("payement_personnels_hebdo.pdf");
+});
+
+
+    loadFromLocalStorage();
+    updateWeeklyTable();
+    updateDailyTable();
+    updateTaskTable();
+});
+</script>
+</body>
+</html>
